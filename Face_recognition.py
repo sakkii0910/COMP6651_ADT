@@ -8,6 +8,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.manifold import TSNE
 from PIL import Image, ImageEnhance
+from sklearn.model_selection import GridSearchCV
 
 def load_faces_with_contrast(path, img_size=(64, 64), contrast_factor=1.3):
     """
@@ -60,7 +61,6 @@ def load_faces_with_contrast(path, img_size=(64, 64), contrast_factor=1.3):
                 print(f"Warning: Could not process {filename}: {e}")
 
     return np.array(images), np.array(labels)
-
 
 # Load dataset
 dataset_path = r'C:\Users\Janmitsinh\Desktop\academic_Concordia\A_SEM3\SCM\COMP6651_ADT\orl-database-for-training-and-testing\renamed_faces'
@@ -227,3 +227,58 @@ plt.show()
 # Summary of best results
 print(f"\nBest NMF n_components: {best_n_nmf} with Test Accuracy: {max(nmf_test_acc):.2f}%")
 print(f"Best PCA n_components: {best_n_pca} with Test Accuracy: {max(pca_test_acc):.2f}%")
+
+def perform_grid_search(X_train, y_train, model_type="pca", components=50):
+    """
+    Perform GridSearchCV on SVC after transforming with PCA or NMF.
+
+    Args:
+        X_train (np.ndarray): Training features.
+        y_train (np.ndarray): Training labels.
+        model_type (str): 'pca' or 'nmf'
+        components (int): Number of components for transformation.
+
+    Returns:
+        best_estimator: Trained model with best hyperparameters.
+        grid_result: GridSearchCV object (can extract cv_results_ etc.).
+    """
+    if model_type == "pca":
+        transformer = PCA(n_components=components, svd_solver='randomized', whiten=True, random_state=42)
+    elif model_type == "nmf":
+        transformer = NMF(n_components=components, init='nndsvda', max_iter=700, random_state=42)
+    else:
+        raise ValueError("model_type must be 'pca' or 'nmf'")
+
+    # Fit and transform the training data
+    X_train_transformed = transformer.fit_transform(X_train)
+
+    # SVM hyperparameter grid
+    param_grid = {
+        'C': [0.1, 1, 10, 100],
+        'gamma': ['scale', 0.01, 0.001],
+        'kernel': ['rbf'] if model_type == 'pca' else ['poly'],
+    }
+
+    svc = SVC()
+    grid = GridSearchCV(svc, param_grid, cv=5, n_jobs=-1, scoring='accuracy', verbose=1)
+    grid.fit(X_train_transformed, y_train)
+
+    print(f"\nBest parameters for {model_type.upper()} SVM: {grid.best_params_}")
+    print(f"Best cross-validated accuracy: {grid.best_score_:.2f}")
+
+    return transformer, grid.best_estimator_, grid
+
+# Use best N components based on previous testing
+print("\nRunning hyperparameter tuning with GridSearchCV...")
+
+# --- GridSearch on PCA ---
+pca_transformer, clf_pca_best, _ = perform_grid_search(X_train, y_train, model_type='pca', components=best_n_pca)
+X_test_pca_final = pca_transformer.transform(X_test)
+print("\nFinal PCA Classification Report (after GridSearch):")
+print(classification_report(y_test, clf_pca_best.predict(X_test_pca_final)))
+
+# --- GridSearch on NMF ---
+nmf_transformer, clf_nmf_best, _ = perform_grid_search(X_train, y_train, model_type='nmf', components=best_n_nmf)
+X_test_nmf_final = nmf_transformer.transform(X_test)
+print("\nFinal NMF Classification Report (after GridSearch):")
+print(classification_report(y_test, clf_nmf_best.predict(X_test_nmf_final)))
