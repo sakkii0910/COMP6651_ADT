@@ -12,7 +12,6 @@ This repository implements face recognition using **Non-negative Matrix Factoriz
 ### Repository Contents
 
 - **`Face_recognition.py`** – Main Python script performing face recognition using NMF and PCA.
-- **`rename_images.py`** – Utility script to standardize naming for input image datasets.
 - **Visualizations**:
   - `nmf_accuracy_line_plot.png`
   - `nmf_face_parts_best_n.png`
@@ -20,7 +19,7 @@ This repository implements face recognition using **Non-negative Matrix Factoriz
   - `nmf_vs_pca_accuracy_comparison.png`
   - `nmf_vs_pca_accuracy_full.png`
   - `pca_components_visualization.png`
-- **`Refenrece paper.pdf`** – Relevant academic paper consulted for methodology.
+  - `tsne_nmf.png`
 - **`report/`** – Contains the detailed project report and any supplementary materials.
 
 ---
