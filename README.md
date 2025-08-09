@@ -1,7 +1,10 @@
 # COMP6651_ADT – NMF Face Recognition
 
 **Course Project** — *COMP 6651: Algorithm Design & Techniques (Summer 2025)*  
-**Group Members:** Janmitsinh Panjrolia, Sakshi Mulik & Elston Farel
+**Group Members:** 
+Janmitsinh Panjrolia - 40294468, 
+Sakshi Mulik - 40295793, 
+Elston Farel - 40305623
 
 ---
 
